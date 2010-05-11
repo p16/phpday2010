@@ -5,11 +5,6 @@ require_once dirname(__FILE__) . '/../../lib/Evento.php';
 
 class EventoTest extends PHPUnit_Framework_TestCase {
 
-  protected $object;
-
-  protected function setUp()
-  {
-  }
 
   public function testFromArray()
   {

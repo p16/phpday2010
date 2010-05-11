@@ -15,7 +15,11 @@ class Evento
     $this->data_fine = $data['data_fine'];
   }
 
-  public function getTitolo()
+  public function save() {
+
+    }
+
+    public function getTitolo()
   {
     return $this->titolo;
   }
