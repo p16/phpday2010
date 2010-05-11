@@ -9,12 +9,14 @@
     
   </head>
   <body>
+
     <script type="text/javascript">
 	$(function() {
             $("#datepicker_1").datepicker({
                 showOn: 'button',
                 buttonImage: 'css/ui-lightness/images/calendar.gif',
-                buttonImageOnly: true
+                buttonImageOnly: true,
+                dateFormat: 'yy-mm-dd'
             });
 	});
 
@@ -22,12 +24,17 @@
             $("#datepicker_2").datepicker({
                 showOn: 'button',
                 buttonImage: 'css/ui-lightness/images/calendar.gif',
-                buttonImageOnly: true
+                buttonImageOnly: true,
+                dateFormat: 'yy-mm-dd'
             });
 	});
     </script>
       <div class="container showgrid">
     <h2>Inserisci un nuovo evento</h2>
+
+    <?php if (isset($_POST['message'])): ?>
+      <div class="notice"><?php echo $_POST['message'] ?></div>
+    <?php endif; ?>
 
     <form action="creaevento.php" method="POST">
       <p>

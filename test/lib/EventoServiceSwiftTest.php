@@ -1,40 +1,45 @@
 <?php
-require_once 'PHPUnit/Framework.php';
-
+require_once 'PHPUnit/Extensions/Database/TestCase.php';
 require_once dirname(__FILE__) . '/../../lib/EventoService.php';
 
-class EventoServiceTest extends PHPUnit_Framework_TestCase
+class EventoServiceSwiftTest extends PHPUnit_Extensions_Database_TestCase
 {
+  protected $pdo;
 
-  public function startFakemail($mail_dir)
+  protected function getConnection()
   {
-    shell_exec('fakemail.py --port=10025 --background --host=localhost --path='.$mail_dir);
-    shell_exec('rm '.$mail_dir.'/*');
+    return $this->createDefaultDBConnection($this->pdo, 'sqlite');
   }
 
-  public function stopFakemail()
+  protected function getDataSet()
   {
-    shell_exec('killall fakemail');
+    return $this->createFlatXMLDataSet(dirname(__FILE__).'/../fixtures/evento.xml');
+  }
+  
+  public function setUp()
+  {
+    $dir = realpath(dirname(__FILE__) . '/../mail');
+    
+    $this->pdo = new PDO('sqlite::memory:');
+    $query = "CREATE TABLE evento (titolo VARCHAR(256) NOT NULL PRIMARY KEY, descrizione VARCHAR(512), data_inizio DATE, data_fine DATE)";
+    $this->pdo->query($query);
+    exec('rm -f '.$dir.'/*');
   }
 
   public function testCreaNuovoEvento()
   {
-   $this->startFakemail(dirname(__FILE__) . '/../mail');
-
    $data = array('titolo' => 'nuovo titolo',
                   'descrizione' => 'bla bla bla',
                   'data_inizio' => '15-10-2010',
                   'data_fine' => '18-10-2010');
 
    $es = new EventoService();
-   $es->creaNuovoEvento($data);
-
-
-   $this->stopFakemail();
+   $es->creaNuovoEvento($data, $this->pdo);
   }
 
   protected function tearDown()
   {
+    $this->pdo = null;
   }
 }
 

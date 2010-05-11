@@ -12,17 +12,13 @@ require_once 'Evento.php';
  */
 class EventoService
 {
-  public function creaNuovoEvento($data)
+  public function creaNuovoEvento($data, $conn = null)
   {
     $evento = new Evento();
     $evento->fromArray($data);
-    $evento->save();
-
-    mail('admin@example.com',
-         "nuovo evento: ".$evento->getTitolo(),
-         "Ciao, \n è stato pubblicato un nuovo evento");
-    }
-
+    $evento->save($conn);
+    mail('admin@example.com', "nuovo evento: ".$evento->getTitolo(), "Ciao, \n è stato pubblicato un nuovo evento");
+  }
 }
 
 ?>
