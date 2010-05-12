@@ -32,11 +32,11 @@
       <div class="container showgrid">
     <h2>Inserisci un nuovo evento</h2>
 
-    <?php if (isset($_POST['message'])): ?>
-      <div class="notice"><?php echo $_POST['message'] ?></div>
+    <?php if (isset($_GET['message'])): ?>
+      <div class="notice"><?php echo urldecode($_GET['message']) ?></div>
     <?php endif; ?>
 
-    <form action="creaevento.php" method="POST">
+    <form action="http://localhost/phpday2010/web/creaevento.php" method="POST">
       <p>
           <label for="titolo">Titolo: </label><br/>
           <input name="titolo" type="text" />

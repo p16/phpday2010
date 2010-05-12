@@ -1,0 +1,298 @@
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>
+        Fakemail is an SMTP gateway replacement to make mail testing easier
+    </title>
+<link rel="stylesheet" type="text/css" href="docs.css" title="Styles">
+</head>
+<body>
+<div class="menu_back">
+<div class="menu">
+<h2>
+<span class="chosen">Fakemail</span>
+</h2>
+</div>
+</div>
+<h1>Fakemail documentation</h1>
+<div class="content">
+        <p>
+<a class="target" name="what">
+<h2>What is fakemail?</h2>
+</a>
+</p>
+            <p>
+                Fakemail is a dummy SMTP gateway written in Perl.
+                It's a tool for testing applications that works by acting
+                as an intercept for outgoing mails.
+            </p>
+            <p>
+                If you have had to test applications that send e-mails, for
+                example as part of a web sign up process, you will know what
+                an involved and tricky exercise that can be.
+                Usually you have to sign up with a special e-mail address,
+                have the mail go to the mail server and then real it back into
+                the test with a POP/IMAP client.
+                Besides all of the extra POP libraries you need there is also
+                the spurious failures because of mail delays and the difficulty
+                of setting all of this up for every development box.
+                That's assuming you get all of the developer machines past
+                the security that should be protecting your mail server.
+            </p>
+            <p>
+                Fakemail works by intercepting the mail before it leaves
+                the machine by replacing your mail transfer agent (MTA).
+                It's a simple script run from the command line and then
+                killed when it's captured the mails...
+<pre class="shell">
+fakemail --host=localhost --port=10025 path=temp --background
+</pre>
+                Mails are simply dumped to a directory of your choosing,
+                here the a temporary directory, complete with all of the mail headers.
+                Briefly, the port parameter is the port to listen on initially,
+                the host parameter is not currently checked and
+                the background flag tells <em>fakemail</em> to run as a
+                daemon and to return the process ID of the detached process.
+            </p>
+            <p>
+                If you already have an SMTP server on your computer, then you
+                will either need to disable it to free up port 25 or use
+                another port.
+                The second option means that your mail sending library must have the
+                capability to select a port other than 25 by some sort of
+                configuration.
+            </p>
+        
+        <p>
+<a class="target" name="install">
+<h2>Basic installation</h2>
+</a>
+</p>
+            <p>
+                There is no installation of the fakemail program itself, but
+                it does have some prerequisites.
+                The first is <a href="http://www.perl.org/">Perl</a> itself and
+                beyond the basic distribution you will also need the
+                <a href="http://cpan.perl.org">CPAN</a>
+                module <em>Net::Server::Mail::SMTP</em>.
+                Once Perl is installed you can install this module with...
+<pre class="shell">
+perl -MCPAN -e 'install Net::Server::Mail::SMTP'
+</pre>
+                For <em>fakemail</em> itself all you have to do is unpack the
+                <a href="http://sourceforge.net/projects/fakemail/">Sourceforge</a>
+                tarball and it's ready to run.
+            </p>
+            <p>
+                To confirm everything is working, we should send it an e-mail.
+                Open a terminal and start <em>fakemail</em> in the foreground...
+<pre class="shell">
+fakemail --host=localhost --port=10025 path=.
+</pre>
+                All of these arguments are required.
+                Here is what they mean:
+                <ul>
+                    <li>
+                        The host parameter names the server as <em>localhost</em>.
+                        Although required, thisis not yet acted upon.
+                    </li>
+                    <li>
+                        The port argument sets the port that <em>fakemail</em>
+                        will listen on for connections.
+                        It will listen on this port until it's process is killed.
+                        <em>fakemail</em> is a full INET server and can handle
+                        multiple simultaneous requests.
+                        Note you can only connect to ports below 1024 if you
+                        are the root user.
+                    </li>
+                    <li>
+                        The path is the directory where the captured mails will
+                        be saved.
+                        The name of the file is the "to" address of
+                        the incoming mail with the index appended.
+                        For example the second mail sent to "me@here"
+                        will be saved in the file "me@here.2"
+                    </li>
+                </ul>
+                That terminal is now occupied, so open another and connect with
+                <em>telnet</em> to the port we chose earlier...
+<pre class="shell">
+telnet localhost 10025
+</pre>
+                If everything is working we should see the response...
+<pre class="shell">
+Connected to localhost.localdomain (127.0.0.1).
+Escape character is '^]'.
+220 uno.home SMTP Net::Server::Mail (Perl) Service ready
+</pre>
+                We can manually enter SMTP commands to simulate a mail dispatch,
+                although we have to send them in order.
+                The commands are "HELO" to start the session,
+                "MAIL From:" to set the sender, "RCPT To:"
+                to set the target and "DATA" for the mail content
+                itself.
+                The "QUIT" command ends the session.
+                Here is the full conversation with our commands in bold...
+<pre class="shell">
+220 uno.home SMTP Net::Server::Mail (Perl) Service ready
+<strong>HELO mailer</strong>
+250 Requested mail action okay, completed
+<strong>MAIL From: me@here</strong>
+250 sender me@here OK
+<strong>RCPT To: you@there</strong>
+250 recipient you@there OK
+<strong>DATA</strong>
+354 Start mail input; end with &lt;CRLF&gt;.&lt;CRLF&gt;
+<strong>
+A-header: Sample header
+
+Hello
+.</strong>
+250 message queued
+<strong>QUIT</strong>
+221 uno.home Service closing transmission channel
+</pre>
+                We must enter both a carriage return and a line feed for
+                each mail header line, although most <em>telnet</em> programs
+                will do that automatically.
+            </p>
+            <p>
+                After this sequence we can stop the fakemail terminal with
+                a Control-C to interrupt the process.
+                Because we set the <em>fakemail</em> path to the local directory,
+                we should see a file labelled "you@there.1".
+                Here is the contents of that file...
+<pre class="file">
+A-header: Sample header
+
+Hello
+</pre>
+                You should now be ready to use <em>fakemail</em> to make your
+                testing easier.
+            </p>
+        
+        <p>
+<a class="target" name="typical">
+<h2>A typical test case</h2>
+</a>
+</p>
+            <p>
+                I am going to use a <a href="http://www.simpletest.org/">SimpleTest</a>
+                (PHP) example here, but translation to
+                <a href="http://sourceforge.net/projects/jwebunit">JWebUnit</a>
+                or <a href="http://sourceforge.net/projects/htmlunit">HtmlUnit</a>
+                should be straight forward.
+            </p>
+            <p>
+                Firstly we will need a web page to test...
+<pre>
+&lt;html&gt;
+    &lt;?php
+        require_once('class.phpmailer.php');
+        require_once('class.smtp.php');
+        
+        if ($_GET['email']) {<strong>
+            $mail = new PHPMailer();
+            $mail-&gt;addAddress(trim($_GET['email']));
+            $mail-&gt;From = 'test@lastcraft.com';
+            $mail-&gt;Body = 'Hi!';
+            $mail-&gt;Subject = 'Hello';
+            $mail-&gt;Mailer = 'smtp';
+            $mail-&gt;Host = 'localhost';
+            $mail-&gt;Port = isset($_GET['port']) ? $_GET['port'] : 25;
+            if ($mail-&gt;send()) {
+                print 'Mail sent to &lt;em&gt;' . $_GET['email'] . '&lt;/em&gt;&lt;br /&gt;';
+            }</strong>
+        }
+    ?&gt;
+    &lt;form&gt;
+        Enter your mail address:&lt;br /&gt;
+        &lt;input type="text" name="email" /&gt;&lt;br /&gt;
+        &lt;input type="submit" value="Send" /&gt;
+    &lt;/form&gt;
+&lt;/html&gt;
+</pre>
+                This is not strictly test driven develoment of course, but things
+                are easier to explain if I show the script first.
+            </p>
+            <p>
+                Because the inbuilt PHP <span class="new_code">mail()</span> function does not
+                let you override the port, I am using the
+                <a href="http://sourceforge.net/projects/phpmailer/">PHPMailer library</a>.
+                This library has it's own SMTP client making the choice of port
+                easy to configure.
+                I am taking the port as an extra form parameter,
+                because we don't always have the freedom to disable mail transfer
+                agents whilst testing.
+            </p>
+            <p>
+                Now the test case...
+<pre>
+&lt;?php
+    require_once('simpletest/web_tester.php');
+    require_once('simpletest/reporter.php');
+    
+    class MailGreetingTest extends WebTestCase {
+    
+        function setUp() {<strong>
+            $command = './fakemail --path=. --host=localhost --port=10025 --background';
+            $this-&gt;pid = `$command`;</strong>
+            @unlink('marcus@localhost.1');
+        }
+        
+        function tearDown() {<strong>
+            $command = 'kill ' . $this-&gt;pid;
+            `$command`;</strong>
+            @unlink('marcus@localhost.1');
+        }
+        
+        function testGreetingMailIsSent() {
+            $this-&gt;get('http://localhost/fakemail/docs/example/mail.php');
+            $this-&gt;setField('email', 'marcus@localhost');
+            $this-&gt;clickSubmit('Send', array('port' =&gt; 10025));
+            $this-&gt;assertWantedText('Mail sent to marcus@localhost');
+            <strong>
+            $sent = file_get_contents('marcus@localhost.1');</strong>
+            list($headers, $content) = split("\r\n\r\n", $sent);
+            $this-&gt;assertTrue(trim($content) == 'Hi!');
+        }
+    }
+    
+    $test = new MailGreetingTest();
+    $test-&gt;run(new HtmlReporter());
+?&gt;
+</pre>
+                The main point of course is that <em>fakemail</em> is started
+                and stopped for each test using <span class="new_code">setUp()</span> and
+                <span class="new_code">tearDown()</span>.
+                In addition to keeping track of the process ID so as to
+                kill <em>fakemail</em> after each test, we also need to delete
+                the captured mails.
+                Otherwise the next mail will be saved as <em>marcus@lastcraft.com.2</em>
+                making our tests a erratic.
+                The local directory needs to be wroteable by the web server for
+                this to work.
+            </p>
+            <p>
+                The only tricky bit in the test is the <span class="new_code">clickSubmit()</span>
+                line.
+                That's where we send the extra port parameter override for
+                testing so that the mail is sent to <em>fakemail</em> rather
+                than the regular mail transfer agent.
+            </p>
+            <p>
+                The actual test itself could be improved by some obvious refactoring.
+                Creating a generic <span class="new_code">MailTestCase</span> would involve
+                more useful assertions such as <span class="new_code">assertMailText()</span>
+                and <span class="new_code">clickMailLink()</span> for testing double opt-ins.
+                For ease of illustration, I am just picking the captured mail
+                apart to confirm the not very exciting content.
+                Hopefully your own tests will be much more interesting.
+            </p>
+        
+    </div>
+<div class="copyright">
+            Copyright<br>Marcus Baker, Jason Sweat, Perrick Penet 2004
+        </div>
+</body>
+</html>

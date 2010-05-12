@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+  <evento titolo="Primo evento!" descrizione="descrizione primo evento" data_inizio="2010-04-01" data_fine="2010-06-05" />
+  <evento titolo="Secondo evento!" descrizione="descrizione secondo evento" data_inizio="2010-04-03" data_fine="2010-06-10" />
+  <evento titolo="Terzo evento!" descrizione="descrizione terzo evento" data_inizio="2010-04-07" data_fine="2010-06-18" />
+</dataset>

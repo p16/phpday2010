@@ -1,5 +1,7 @@
 <?php
 
+require_once 'ConnectionManager.php';
+
 class Evento
 {
   private $titolo;
@@ -35,13 +37,8 @@ class Evento
     return $this->data_fine;
   }
 
-  public function save($conn = null)
+  public function save(PDO $conn)
   {
-    if (is_null($conn))
-    {
-      $conn = new PDO('mysql:dbname=phpday2010;host=localhost', 'dbtest', 'test');
-    }
-
     $res = $conn->exec("INSERT INTO evento (titolo, descrizione, data_inizio, data_fine) VALUES ('".$this->titolo."', '".$this->descrizione."', '".$this->data_inizio."', '".$this->data_fine."')");
   }
 }
